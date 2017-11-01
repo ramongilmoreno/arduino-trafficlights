@@ -27,12 +27,22 @@ void setup () {
   }
 }
 
+// State machine
+const int state_a_green = 0;
+const int state_a_transitioning = 1;
+const int state_b_green = 2;
+const int state_b_transitioning = 3;
+const int states = state_b_transitioning + 1;
+
 // Speed control
 const float idleTime = 10;
 const float baseTime = 1000;
 const float minimumTime = 100;
 
 // Globals
+
+// State
+int state = state_a_green;
 
 // Step
 int k = 0;
@@ -43,13 +53,64 @@ float speedSelection = 0.5;
 // Button requested
 boolean buttonRequested = false;
 
+const boolean ON = LOW;
+const boolean OFF = HIGH;
+
 void loop () {
+  if (buttonRequested) {
+    switch (state) {
+      case state_a_green:
+        state = state_a_transitioning;
+        break;
+      case state_b_green:
+        state = state_b_transitioning;
+        break;
+    }
+  }
+  switch (state) {
+    case state_a_green:
+      digitalWrite(tl_a_base + offset_red, OFF);
+      digitalWrite(tl_a_base + offset_yellow, OFF);
+      digitalWrite(tl_a_base + offset_green, ON);
+      digitalWrite(tl_b_base + offset_red, ON);
+      digitalWrite(tl_b_base + offset_yellow, OFF);
+      digitalWrite(tl_b_base + offset_green, OFF);
+      break;
+    case state_a_transitioning:
+      digitalWrite(tl_a_base + offset_red, OFF);
+      digitalWrite(tl_a_base + offset_yellow, ON);
+      digitalWrite(tl_a_base + offset_green, OFF);
+      digitalWrite(tl_b_base + offset_red, ON);
+      digitalWrite(tl_b_base + offset_yellow, OFF);
+      digitalWrite(tl_b_base + offset_green, OFF);
+      state = state_b_green;
+      break;
+    case state_b_green:
+      digitalWrite(tl_a_base + offset_red, ON);
+      digitalWrite(tl_a_base + offset_yellow, OFF);
+      digitalWrite(tl_a_base + offset_green, OFF);
+      digitalWrite(tl_b_base + offset_red, OFF);
+      digitalWrite(tl_b_base + offset_yellow, OFF);
+      digitalWrite(tl_b_base + offset_green, ON);
+      break;
+    case state_b_transitioning:
+      digitalWrite(tl_a_base + offset_red, ON);
+      digitalWrite(tl_a_base + offset_yellow, OFF);
+      digitalWrite(tl_a_base + offset_green, OFF);
+      digitalWrite(tl_b_base + offset_red, OFF);
+      digitalWrite(tl_b_base + offset_yellow, ON);
+      digitalWrite(tl_b_base + offset_green, OFF);
+      state = state_a_green;
+      break;
+  }
+  /*
   // Action
   k = (k + 1) % 6;
   for (int j = 0; j < 6; j++) {
     boolean actualValue = k == j ? LOW : HIGH;
     digitalWrite(0 + j, buttonRequested ? HIGH : actualValue);
   }
+  */
 
   // Button requested reset at each step
   buttonRequested = false;
