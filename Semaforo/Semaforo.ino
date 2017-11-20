@@ -2,10 +2,12 @@
 const int offset_red = 0;
 const int offset_yellow = 1;
 const int offset_green = 2;
+const int offset_pedestrian = 3;
+const int offset_max = 4;
 
 // Traffic light A and B start pin
 const int tl_a_base = 0;
-const int tl_b_base = 3;
+const int tl_b_base = 4;
 
 // Auto mode by default with pull up
 const int mode = A0;
@@ -28,7 +30,7 @@ void setup () {
   pinMode(greenDuration, INPUT);
   
   // Setup output pins
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < offset_max; i++) {
     pinMode(tl_a_base + i, OUTPUT);
     digitalWrite(tl_a_base + i, HIGH);
     pinMode(tl_b_base + i, OUTPUT);
@@ -64,6 +66,8 @@ boolean buttonRequested = false;
 
 const boolean ON = LOW;
 const boolean OFF = HIGH;
+const boolean PEDESTRIAN_WAIT = ON;
+const boolean PEDESTRIAN_PUSH = OFF;
 
 boolean isAuto () {
   return digitalRead(mode) != LOW;
@@ -99,9 +103,11 @@ void loop () {
       digitalWrite(tl_a_base + offset_red, OFF);
       digitalWrite(tl_a_base + offset_yellow, OFF);
       digitalWrite(tl_a_base + offset_green, ON);
+      digitalWrite(tl_a_base + offset_pedestrian, PEDESTRIAN_WAIT);
       digitalWrite(tl_b_base + offset_red, ON);
       digitalWrite(tl_b_base + offset_yellow, OFF);
       digitalWrite(tl_b_base + offset_green, OFF);
+      digitalWrite(tl_b_base + offset_pedestrian, PEDESTRIAN_PUSH);
       stateGreenIterations++;
       if (timeForAChange()) {
         state = state_a_transitioning;
@@ -122,9 +128,11 @@ void loop () {
       digitalWrite(tl_a_base + offset_red, ON);
       digitalWrite(tl_a_base + offset_yellow, OFF);
       digitalWrite(tl_a_base + offset_green, OFF);
+      digitalWrite(tl_a_base + offset_pedestrian, PEDESTRIAN_PUSH);
       digitalWrite(tl_b_base + offset_red, OFF);
       digitalWrite(tl_b_base + offset_yellow, OFF);
       digitalWrite(tl_b_base + offset_green, ON);
+      digitalWrite(tl_b_base + offset_pedestrian, PEDESTRIAN_WAIT);
       stateGreenIterations++;
       if (timeForAChange()) {
         state = state_b_transitioning;
@@ -153,6 +161,19 @@ void loop () {
       // Button is setup with a pullup resistor, so it is pressed in low
       if (!digitalRead(button)) {
         buttonRequested = true;
+
+        // Upon request inmmediately the caller (the one that is red) pedestrian light turns to wait.
+        switch (state) {
+          case state_a_green:
+          case state_a_transitioning:
+            digitalWrite(tl_b_base + offset_pedestrian, PEDESTRIAN_WAIT);
+            break;
+          case state_b_green:
+          case state_b_transitioning:
+            digitalWrite(tl_a_base + offset_pedestrian, PEDESTRIAN_WAIT);
+            break;
+        }
+        
       }
     }
     delay(idleTime);
