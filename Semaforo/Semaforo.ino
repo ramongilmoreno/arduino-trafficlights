@@ -30,9 +30,9 @@ void setup () {
   // Setup output pins
   for (int i = 0; i < 3; i++) {
     pinMode(tl_a_base + i, OUTPUT);
-    digitalWrite(tl_a_base + i, LOW);
+    digitalWrite(tl_a_base + i, HIGH);
     pinMode(tl_b_base + i, OUTPUT);
-    digitalWrite(tl_b_base + i, LOW);
+    digitalWrite(tl_b_base + i, HIGH);
   }
 }
 
