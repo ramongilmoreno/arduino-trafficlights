@@ -1,63 +1,67 @@
-Controlador de dos semáforos con funciones de:
+Traffic lights controller for two lights in an intersection with the following functions:
 
-    * Colores rojo, ámbar y verde en los dos semáforos.
-        * Semáforo de peatones: "Peatón pulse" y "Espere verde"
-    * Modo automático desactivable: en el modo automático los dos semáforos cambian a verde alternativamente.
-    * Duración personalizable del periodo en verde. Aunque igual para los dos semáforos.
-    * Duración personalizable de la transición de verde a rojo (= duración del ámbar).
-    * Botón manual para forzar el cambio de verde a rojo. Uno para los dos semáforos.
+    * Red, yellow and green lights for each direction.
+        * Pedestrian button lights (no pedestrian traffic light though): "Push" and "Wait".
+    * Auto mode (each direction lights gets its share of green). Can be disabled.
+    * Customizable duration of the transaction to red (that is: duration of the green light).
+    * Customizable duration of the green light. Same time for both directions.
+    * Input button to force traffic light change. Same switch for both directions.
    
-Componentes:
+Components:
 
-    Arduino UNO o equivalente
-    Placa de relés x8
-        Placa de relés activa en bajo
-    Un potenciómetro R1, para controlar la velocidad de cambio (referencia = duración del ámbar)
-    Un potenciómetro R2, para controlar la duración del verde (número de iteraciones de velocidad de cambio)
-        Los potenciómetros da igual el valor, se han usado 100K
-    Un interruptor, para desactivar el modo automático (el interruptor abierto es automático, cerrado es manual)
-    Un pulsador, para solicitar el cambio del semáforo
-        No se distingue uno u otro semáforo
-    
-Alimentación:
+    Arduino UNO or equivalent
+    8x Relay board.
+        5V.
+        Enabled at low.
+    R1 potentiometer, controls duration of transition/yellow light.
+    R2 potentiometer, controls duration of green light (actually relative to the time of the transtion)
+        Not of importance value of R1 and R2, though used 100K for both.
+    Switch to disable auto mode.
+        Open will be auto enabled (an internal pull up resistor will be used).
+        Closed to ground will be manual mode.
+    Push button to request traffic light change.
+        Same input for both directions.
 
-    Se puede alimentar separadamente la placa Arduino de la de relés.
-        Aunque el conexionado aquí presentado no lo implementa, el aislamiento de las dos placas es sencillo alimentando por separado GND y JD-VCC de la placa de relés.
-    
-    La placa de relés tiene un jumper de 3 posiciones [GND - VCC - JD-VCC] que se quita.
-        Al pin GND y JD-VCC conectaremos 0 y 5V directamente de una fuente (puede ser un cargador USB) para que el relé funcione de forma aislada.
+Power supply:
+
+    Used a external 5V 1A mobile USB phone charger.
+        This input was connected to:
+            5V to the 5V pin in the Arduino board.
+            5V to VCC and JD-VCC in relays board. Mine contained a jumper for it.
+            GND to Arduino GND.
+                And to the relays boards GND as well.
+        Do not plug the USB cable to the Arduino board then the realys board to the Arduino.
+            In this configuration Arduino board cannot supply enough current to the relay boards and voltage will drop.
+
+Connections (includes power supply connections):
+
+    The 5V from the power supply to:
+        Arduino board 5V pin.
+        Relays board VCC and JD-VCC (may use jumper).
+        One side of R1 potentiomenter
+        One side of R2 potentiomenter
         
-    En las conexiones debajo se va a conectar una fuente de 5V a un bus. Y de ahí se alimentan:
-        La placa Arduino 5V y GND
-        La placa de relés, en los 3 [GND - VCC - JD-VCC] pines a GNC y JD-VCC (sin el jumper, aunque si vamos a conectar todo esto da igual)
+    GND to:
+        Arduino board GND pin.
+        Relays board GND pin.
+        Other side of R1 potentiomenter.
+        Other side of R2 potentiomenter.
+        One side of the auto mode switch.
+        One side of the push button for traffic light change request.
         
-Conexiones:
-
-    5V de la Arduino se pone en un bus al que van:
-        Un extremo del potenciómetro de R1
-        Un extremo del potenciómetro de R2
-        A la entrada de alimentación 5V de la placa Arduino
-        A la entrada VCC de la placa de relés junto a las señales de entrada
-        A la entrada JD-VCC de la placa de relés
-
-    GND de la Arduino va a un bus en el que están
-        GND (de los pines [GND - VCC - JD-VCC]) de la tarjeta de relés 
-        El otro extremo del potenciómetro R1
-        El otro extremo del potenciómetro R2
-        Una de las patillas del interruptor (será activo en baja cuando se cierre)
-        Un extremo del pulsador (el pulsador será activo en baja)
-        
-    De la placa Arduino:
-        A0 al interruptor. Si no se conecta a GND (= si el interruptor no está cerrado) el pin está configurado con un pullup resistor que activa el modo automático.
-        A1 al otro extremo del pulsador. Se configura este pin con un pullup resistor interno.
-        A2 al valor del potenciómetro R1 de control de velocidad de cambio.
-        A3 al valor del potenciómetro R2 de control de duración del verde.
-        D0 a D7 a las entradas de la placa de relés para los 6 relés individuales:
-            D0 Semáforo 1 Rojo
-            D1 Semáforo 1 Ámbar
-            D2 Semáforo 1 Verde
-            D3 Semáforo 1 Peatón pulse/Espere verde
-            D4 Semáforo 2 Rojo
-            D5 Semáforo 2 Ámbar
-            D6 Semáforo 2 Verde
-            D7 Semáforo 2 Peatón pulse/Espere verde
+    From Arduino board:
+        A0 to the other side of the auto mode switch.
+        A1 to the other side of the push button.
+        A2 to the R1 potentiomenter value. To control transition speed.
+        A3 to the R2 potentiomenter value. To control the duration of green light (same for both directions), relative to the transition duration.
+        D0 to D7 to the 8 relays input:
+            Traffic lights #1:
+                D0 Red.
+                D1 Yellow.
+                D2 Green.
+                D3 Pedestrian button indicator: push to change/please wait.
+            Traffic lights #2:
+                D4 Red.
+                D5 Yellow.
+                D6 Green.
+                D7 Pedestrian button indicator: push to change/please wait.
